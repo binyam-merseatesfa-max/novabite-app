@@ -1,0 +1,53 @@
+# buildspec.yml – Anweisungen für AWS CodeBuild
+# Diese Datei liegt im Stammverzeichnis des Repositories.
+# CodeBuild liest sie und führt die Phasen nacheinander aus.
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      # ── Vorbereitung ──────────────────────────────────────────────
+      # Melde uns bei Amazon ECR an.
+      # Die Umgebungsvariablen AWS_DEFAULT_REGION und AWS_ACCOUNT_ID
+      # werden von CodeBuild automatisch bereitgestellt.
+      - echo "Anmelden bei Amazon ECR in Region $AWS_DEFAULT_REGION..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # Image-Tag aus dem Git-Commit-Hash generieren.
+      # So hat jedes Image einen eindeutigen, nachvollziehbaren Tag.
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/novabite-app
+      - echo "Image-Tag wird sein: $IMAGE_TAG"
+
+  build:
+    commands:
+      # ── Bauen ─────────────────────────────────────────────────────
+      - echo "Docker-Image wird gebaut..."
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      # Auch als "latest" taggen, damit immer das neueste Image
+      # über das "latest"-Tag erreichbar ist.
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+
+  post_build:
+    commands:
+      # ── Nachbereitung: Pushen und Artefakt erstellen ───────────────
+      - echo "Image wird nach ECR gepusht..."
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      # imagedefinitions.json erstellen.
+      # Diese Datei teilt CodeDeploy (und dem ECS-Standard-Deployment)
+      # mit, welches Image und welcher Container-Name verwendet werden soll.
+      # "novabite-container" muss exakt dem Container-Namen in der
+      # Task Definition entsprechen!
+      - echo "Artefakt-Datei wird erstellt..."
+      - printf '[{"name":"novabite-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - echo "Build erfolgreich abgeschlossen."
+
+artifacts:
+  # Was soll als Build-Artefakt an die nächste Stage weitergegeben werden?
+  # Wir geben alle Dateien weiter – CodeDeploy braucht sowohl
+  # imagedefinitions.json als auch appspec.yaml und taskdef.json.
+  files:
+    - imagedefinitions.json
+    - appspec.yaml
+    - taskdef.json
