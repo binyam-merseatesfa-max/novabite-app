@@ -1,0 +1,23 @@
+# node_modules nicht ins Image – sie werden im Container neu installiert
+node_modules
+
+# Build-Artefakte nicht nötig (werden im Container neu gebaut)
+dist
+
+# Git-History gehört nicht ins Image (Sicherheit + Größe)
+.git
+.gitignore
+
+# Lokale Umgebungsvariablen – NIEMALS ins Image!
+.env
+.env.local
+.env.production
+
+# Editor-spezifische Dateien
+.vscode
+.idea
+*.swp
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
