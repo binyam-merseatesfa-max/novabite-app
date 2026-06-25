@@ -16,8 +16,9 @@ phases:
       # So hat jedes Image einen eindeutigen, nachvollziehbaren Tag.
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - REPOSITORY_URI=602689946870.dkr.ecr.eu-central-1.amazonaws.com/novabite-app
-      - echo "Image-Tag wird sein: $IMAGE_TAG"
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.eu-central-1.amazonaws.com/novabite-app
+      #x - echo "Image-Tag wird sein: $IMAGE_TAG"
+       'echo "Image-Tag wird sein: $IMAGE_TAG"'
 
   build:
     commands:
@@ -40,7 +41,8 @@ phases:
       # "novabite-container" muss exakt dem Container-Namen in der
       # Task Definition entsprechen!
       - echo "Artefakt-Datei wird erstellt..."
-      - printf '[{"name":"novabite-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      # - printf '[{"name":"novabite-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - 'printf ''[{"name":"novabite-container","imageUri":"%s"}]'' "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json'
       - echo "Build erfolgreich abgeschlossen."
 
 artifacts:
