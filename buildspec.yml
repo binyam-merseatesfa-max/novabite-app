@@ -31,6 +31,7 @@ phases:
   post_build:
     commands:
       # ── Nachbereitung: Pushen und Artefakt erstellen ───────────────
+      - echo "Deploye in Umgebung: $DEPLOY_ENV"
       - echo "Image wird nach ECR gepusht..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
