@@ -1,6 +1,6 @@
 import React from 'react';
 
-const APP_VERSION = "v1.1.0"; 
+const APP_VERSION = "v2.0.0"; 
 
 function App() {
   return (
