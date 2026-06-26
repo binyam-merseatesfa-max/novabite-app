@@ -1,0 +1,19 @@
+# appspec.yaml – Anweisungen für AWS CodeDeploy
+# Diese Datei beschreibt, wie CodeDeploy das Blue/Green Deployment durchführt.
+# "version: 0.0" ist Pflicht für ECS-Deployments – das ist kein Fehler!
+version: 0.0
+
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        # TaskDefinition: Der Platzhalter <TASK_DEFINITION> wird von
+        # CodePipeline zur Laufzeit durch den ARN der neuen Task Definition
+        # ersetzt. Wir müssen hier nichts eintragen.
+        TaskDefinition: <TASK_DEFINITION>
+        LoadBalancerInfo:
+          # ContainerName: Muss exakt dem Container-Namen in der
+          # Task Definition entsprechen.
+          ContainerName: "novabite-container"
+          # ContainerPort: Der Port, auf dem der Container lauscht (Nginx: 80).
+          ContainerPort: 80
