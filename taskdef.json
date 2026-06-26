@@ -1,0 +1,30 @@
+{
+  "family": "novabite-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::602689946870:role/novabite-ecs-execution-role",
+  "containerDefinitions": [
+    {
+      "name": "novabite-container",
+      "image": "602689946870.dkr.ecr.eu-central-1.amazonaws.com/novabite-app:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/novabite",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "novabite",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}
